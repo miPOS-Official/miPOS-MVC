@@ -27,7 +27,6 @@
 #include <nodepp/https.h>
 #include <nodepp/path.h>
 #include <nodepp/json.h>
-#include <nodepp/zlib.h>
 #include <nodepp/url.h>
 #include <nodepp/fs.h>
 
@@ -62,12 +61,7 @@ public: query_t params;
      express_https_t& send( string_t msg ) noexcept { 
           if( exp->state == 0 ){ return (*this); }
           header( "Content-Length", string::to_string(msg.size()) );
-          if( regex::test( headers["Accept-Encoding"], "gzip" ) && msg.size()>UNBFF_SIZE ){
-              header( "Content-Encoding", "gzip" ); send();
-              write( zlib::gzip::get( msg ) ); close(); 
-          } else {
-              send(); write( msg ); close(); 
-          }   exp->state =0; return (*this); 
+          send(); write( msg ); close(); exp->state =0; return (*this); 
      }
 
      express_https_t& sendFile( string_t dir ) noexcept {
@@ -75,12 +69,8 @@ public: query_t params;
             { status(404).send("file does not exist"); } file_t file ( dir, "r" );
               header( "content-length", string::to_string(file.size()) );
               header( "content-type", path::mimetype(dir) );
-          if( regex::test( headers["Accept-Encoding"], "gzip" ) ){
-              header( "Content-Encoding", "gzip" ); send();
-              zlib::gzip::pipe( file, *this );
-          } else {
               send(); stream::pipe( file, *this );
-          }   exp->state = 0; return (*this);
+              exp->state = 0; return (*this);
      }
 
      express_https_t& sendJSON( object_t json ) noexcept {
@@ -116,12 +106,8 @@ public: query_t params;
      template< class T >
      express_https_t& sendStream( T readableStream ) noexcept {
           if( exp->state == 0 ){ return (*this); }
-          if( regex::test( headers["Accept-Encoding"], "gzip" ) ){
-              header( "Content-Encoding", "gzip" ); send();
-              zlib::gzip::pipe( readableStream, *this );
-          } else { send();
               stream::pipe( readableStream, *this );
-          }   exp->state = 0; return (*this);
+              send();exp->state = 0; return (*this);
      }
 
      express_https_t& header( header_t headers ) noexcept {

@@ -1,6 +1,8 @@
 #define MAX_FILENO 1048576
 
 #include <nodepp/nodepp.h>
+
+#include <nodepp/cluster.h>
 #include <express/http.h>
 #include <nodepp/query.h>
 #include <nodepp/fs.h>
@@ -8,6 +10,11 @@
 using namespace nodepp;
 
 void onMain() {
+  
+    if( process::is_parent() ){
+      for( int x=os::cpus(); x--; )
+         { cluster::add(); }
+    }
 
     auto file = file_t( "./list.txt", 
         fs::exists_file("./list.txt")?"a":"w"
