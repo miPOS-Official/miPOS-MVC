@@ -27,7 +27,6 @@
 #include <nodepp/http.h>
 #include <nodepp/path.h>
 #include <nodepp/json.h>
-#include <nodepp/zlib.h>
 #include <nodepp/url.h>
 #include <nodepp/fs.h>
 
@@ -103,21 +102,17 @@ public: query_t params;
 
     /*.........................................................................*/
 
-    bool is_express_available() const noexcept { return exp->state >  0; }
+    bool is_express_available() const noexcept { return exp->state > 0; }
 
-    bool is_express_closed()    const noexcept { return exp->state <= 0; }
+    bool is_express_closed() const noexcept { return exp->state <= 0; }
 
     /*.........................................................................*/
 
      express_http_t& send( string_t msg ) noexcept { 
           if( exp->state == 0 ){ return (*this); }
           header( "Content-Length", string::to_string(msg.size()) );
-          if( regex::test( headers["Accept-Encoding"], "gzip" ) && msg.size()>UNBFF_SIZE ){
-              header( "Content-Encoding", "gzip" ); send();
-              write( zlib::gzip::get( msg ) ); close();
-          } else {
-              send(); write( msg ); close();
-          }   exp->state =0; return (*this); 
+          send(); write( msg ); close();
+          exp->state =0; return (*this); 
      }
 
      express_http_t& sendFile( string_t dir ) noexcept {
@@ -125,12 +120,8 @@ public: query_t params;
             { status(404).send("file does not exist"); } file_t file ( dir, "r" );
               header( "content-length", string::to_string(file.size()) );
               header( "content-type", path::mimetype(dir) );
-          if( regex::test( headers["Accept-Encoding"], "gzip" ) ){
-              header( "Content-Encoding", "gzip" ); send();
-              zlib::gzip::pipe( file, *this );
-          } else {
               send(); stream::pipe( file, *this );
-          }   exp->state = 0; return (*this);
+              exp->state = 0; return (*this);
      }
 
      express_http_t& sendJSON( object_t json ) noexcept {
@@ -166,12 +157,8 @@ public: query_t params;
      template< class T >
      express_http_t& sendStream( T readableStream ) noexcept {
           if( exp->state == 0 ){ return (*this); }
-          if( regex::test( headers["Accept-Encoding"], "gzip" ) ){
-              header( "Content-Encoding", "gzip" ); send();
-              zlib::gzip::pipe( readableStream, *this );
-          } else { send(); 
               stream::pipe( readableStream, *this );
-          }   exp->state = 0; return (*this);
+              send(); exp->state = 0; return (*this);
      }
 
      express_http_t& header( header_t headers ) noexcept {
@@ -629,6 +616,25 @@ namespace nodepp { namespace express { namespace http {
      express_tcp_t ssr( string_t base ) { 
 
           express_tcp_t app;
+
+     /*.........................................................................*/
+
+          function_t<string_t,string_t&> _ssr_ = []( string_t& data ){
+               while( regex::test( data, "<°[^°]+°>" ) ){
+
+                  //process::next();
+                    auto pttr = regex::match( data, "<°[^°]+°>" );
+                    auto name = regex::match( pttr, "[^<°> \n\t]+" );
+
+                    if( fs::exists_file( name ) ){ 
+                        auto str = stream::await( fs::readable( name ) );
+                        data = regex::replace_all( data, pttr, str );
+                    } else {
+                        data = regex::replace_all( data, pttr, "file does not exists" );
+                    }
+                    
+               }    return data;
+          };
          
      /*.........................................................................*/
 
@@ -637,7 +643,7 @@ namespace nodepp { namespace express { namespace http {
                auto pth = regex::replace( cli.path, app.get_path(), "/" );
                     pth = regex::replace_all( pth, "\\.[.]+/", "" );
 
-			   auto cb = _express_::ssr();
+			         auto cb = _express_::ssr();
 
                auto dir = pth.empty() ? path::join( base, "" ) :
                                         path::join( base,pth ) ;
