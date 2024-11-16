@@ -1,3 +1,5 @@
+#define MAX_FILENO 1048576
+
 #include <nodepp/nodepp.h>
 #include <express/http.h>
 #include <nodepp/query.h>
@@ -24,7 +26,7 @@ void onMain() {
         if( data["email"].empty() ){ cli.redirect("/"); return; }
         file.write( data["email"]+"\n" );
 
-        cli.redirect("/"); return;
+        cli.redirect("/suscribed"); return;
 
     });
 

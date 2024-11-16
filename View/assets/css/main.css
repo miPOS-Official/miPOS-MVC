@@ -153,6 +153,22 @@ textarea[dark]{
 
 /*.........................................................................*/
 
+.uk-text-secondary, .uk-text-secondary * { color: var(--secondary) !important; }
+
+.uk-text-primary, .uk-text-primary * { color: var(--primary) !important; }
+
+.uk-text-success, .uk-text-success * { color: var(--success) !important; }
+
+.uk-text-warning, .uk-text-warning * { color: var(--warning) !important; }
+
+.uk-text-danger, .uk-text-danger * { color: var(--danger) !important; }
+
+.uk-text-light, .uk-text-light * { color: var(--light) !important; }
+
+.uk-text-dark, .uk-text-dark * { color: var(--dark) !important; }
+
+/*.........................................................................*/
+
 .uk-background-secondary { background-color: var(--secondary) !important; }
 
 .uk-background-primary { background-color: var(--primary) !important; }
@@ -167,21 +183,7 @@ textarea[dark]{
 
 .uk-background-dark { background-color: var(--dark) !important; }
 
-/*.........................................................................*/
-
-.uk-text-secondary { color: var(--secondary) !important; }
-
-.uk-text-primary { color: var(--primary) !important; }
-
-.uk-text-success { color: var(--success) !important; }
-
-.uk-text-warning { color: var(--warning) !important; }
-
-.uk-text-danger { color: var(--danger) !important; }
-
-.uk-text-light { color: var(--light) !important; }
-
-.uk-text-dark { color: var(--dark) !important; }
+.uk-background-none { background-color: transparent!important; }
 
 /*.........................................................................*/
 
@@ -219,6 +221,22 @@ textarea[dark]{
 
 .uk-badge-danger { 
     background-color: var(--danger) !important; 
+    color: var(--light) !important;
+    border-radius: 30px;
+    text-align: center;
+    width: 30px;
+}
+
+.uk-badge-light { 
+    background-color: var(--light) !important; 
+    color: var(--dark) !important;
+    border-radius: 30px;
+    text-align: center;
+    width: 30px;
+}
+
+.uk-badge-dark { 
+    background-color: var(--dark) !important; 
     color: var(--light) !important;
     border-radius: 30px;
     text-align: center;
